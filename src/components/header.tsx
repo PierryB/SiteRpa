@@ -2,17 +2,17 @@
 import Link from "next/link";
 import ThemeSwitch from "./ThemeSwitch";
 import { useUser } from "@auth0/nextjs-auth0/client";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 export default function Header()
 {
-    const {user, error, isLoading} = useUser();
-    const router = useRouter();
+    const {user} = useUser();
+    // const router = useRouter();
 
-    /*if (user)
-    {
-        router.push('/rpa')
-    }*/
+    // if (user)
+    // {
+    //     router.push('/rpa')
+    // }
 
     return (
         <nav className="flex items-center justify-between mx-auto p-5 font-[family-name:var(--font-geist-mono)]">
