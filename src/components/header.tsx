@@ -2,7 +2,7 @@
 import Link from "next/link";
 import ThemeSwitch from "./ThemeSwitch";
 import { useUser } from "@auth0/nextjs-auth0/client";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 export default function Header()
 {
