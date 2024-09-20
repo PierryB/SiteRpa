@@ -28,5 +28,5 @@ export default function Processamentos() {
     );
   }
 
-  return null; // Retorna null se ainda não estiver pronto para redirecionar
+  return null;
 }

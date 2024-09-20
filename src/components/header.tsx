@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 
 export default function Header()
 {
-    const {user, error, isLoading} = useUser();
-    const router = useRouter();
+    const {user} = useUser();
+    // const router = useRouter();
 
-    /*if (user)
-    {
-        router.push('/rpa')
-    }*/
+    // if (user)
+    // {
+    //     router.push('/rpa')
+    // }
 
     return (
         <nav className="flex items-center justify-between mx-auto p-5 font-[family-name:var(--font-geist-mono)]">
