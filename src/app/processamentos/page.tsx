@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from 'react';
 
 export default function Processamentos() {
-  const { user, isLoading } = useUser();
+  const { user, error, isLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
@@ -12,10 +12,20 @@ export default function Processamentos() {
       alert("Você precisa estar logado para acessar essa página!");
       router.push('/');
     }
+    /*else if (user?.email != "test@test.com")
+    {
+      alert("O seu usuário não tem acesso a essa página.");
+      router.push('/');
+    }*/
   }, [user, isLoading, router]);
 
-  if (isLoading) {
-    return <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">Carregando...</div>;
+  if (isLoading)
+  {
+    return <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">Carregando...</div>
+  }
+  else if (error)
+  {
+    return <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">Erro: {error.message}</div>
   }
 
   if (user) {
