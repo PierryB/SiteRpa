@@ -12,11 +12,11 @@ export default function Processamentos() {
       alert("Você precisa estar logado para acessar essa página!");
       router.push('/');
     }
-    /*else if (user?.email != "test@test.com")
+    else if (user?.email != "test@test.com")
     {
       alert("O seu usuário não tem acesso a essa página.");
       router.push('/');
-    }*/
+    }
   }, [user, isLoading, router]);
 
   if (isLoading)

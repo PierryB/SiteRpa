@@ -33,7 +33,7 @@ export default function Inicio() {
           <FaLinkedin aria-hidden width={16} height={16} />
           Linkedin
         </a>
-        <a
+        {/* <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href="https://wa.me/5547997606148"
           target="_blank"
@@ -41,7 +41,7 @@ export default function Inicio() {
         >
           <ImWhatsapp aria-hidden width={16} height={16} />
           WhatsApp
-        </a>
+        </a> */}
       </footer>
     </div>
   );
