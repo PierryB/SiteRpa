@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { ImWhatsapp } from "react-icons/im";
 import { FaLinkedin } from "react-icons/fa";
 
 export default function Inicio() {
@@ -33,15 +32,6 @@ export default function Inicio() {
           <FaLinkedin aria-hidden width={16} height={16} />
           Linkedin
         </a>
-        {/* <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://wa.me/5547997606148"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <ImWhatsapp aria-hidden width={16} height={16} />
-          WhatsApp
-        </a> */}
       </footer>
     </div>
   );
