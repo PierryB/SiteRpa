@@ -11,7 +11,7 @@
 /* Tema escuro */
 html.dark {
   --background: #171717;
-  --foreground: #ededed;
+  --foreground: #ffffff;
 }
 
 body {
