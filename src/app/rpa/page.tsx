@@ -1,5 +1,6 @@
 'use client';
 import { useUser } from "@auth0/nextjs-auth0/client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
 
@@ -44,15 +45,47 @@ export default function Rpa() {
 
   const handleExecute = () => {
     const emptyFields = Object.entries(formFields).filter(([_, value]) => !value);
-
+  
     if (!selectedOption || selectedOption === 'Selecione uma automação') {
       setMessage('Erro: Selecione uma automação válida.');
     } else if (emptyFields.length > 0) {
       setMessage('Erro: Todos os campos devem ser preenchidos.');
     } else {
       setMessage(`Executando automação: ${selectedOption}.`);
+  
+      const url = 'http://localhost:3001/executar';
+  
+      // Dados a serem enviados no body da requisição
+      const data = {
+        parametro1: formFields.user || formFields.mes, // Aqui uso o campo adequado conforme a seleção
+        parametro2: formFields.password || '',         // Se for a automação 1, envia a senha, caso contrário, pode enviar string vazia
+      };
+  
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data), // Envia os dados no corpo da requisição
+      })
+        .then((response) => {
+          if (!response.ok) {
+            return response.json().then((err) => {
+              throw new Error(err.mensagem);
+            });
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log('Success:', data);
+          setMessage('Automação executada com sucesso.');
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          setMessage(`Erro ao executar a automação: ${error.message} ||| ${formFields.user} ||| ${formFields.password} ||| ${JSON.stringify(data)}`);
+        });
     }
-
+  
     setTimeout(() => {
       setMessage(null);
     }, 3000);

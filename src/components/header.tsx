@@ -41,7 +41,7 @@ export default function Header()
                     Automações
                 </Link>
         
-                <Link href="/processamentos" className="p-3 rounded-md transition-all duration-200"
+                {/* <Link href="/processamentos" className="p-3 rounded-md transition-all duration-200"
                     onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = 'var(--foreground)';
                         e.currentTarget.style.color = 'var(--background)';
@@ -51,7 +51,7 @@ export default function Header()
                         e.currentTarget.style.color = 'var(--foreground)';
                     }}>
                     Processamentos
-                </Link>
+                </Link> */}
             </div>
         
             <div className="flex items-center gap-8">
