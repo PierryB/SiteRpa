@@ -19,6 +19,9 @@ export default function Rpa() {
       alert("Você precisa estar logado para acessar essa página.");
       router.push('/');
     }
+    else{
+      
+    }
   }, [user, authLoading, router]);
 
   useEffect(() => {
@@ -31,7 +34,6 @@ export default function Rpa() {
   
   useEffect(() => {
     const savedLoading = sessionStorage.getItem('isLoading');
-    console.log(savedLoading);
     if (savedLoading === 'true') {
       setIsLoading(true);
     } else {
@@ -51,7 +53,7 @@ export default function Rpa() {
     if (savedMessage) {
       setMessage(savedMessage);
     }
-  }, []);  
+  }, []);
 
   if (authLoading) {
     return <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-20 pb-20 gap-16 sm:p-20 text-2xl font-[family-name:var(--font-geist-sans)]">Carregando...</div>;
@@ -83,77 +85,58 @@ export default function Rpa() {
   };
 
   const handleExecute = async () => {
-    const emptyFields = Object.entries(formFields).filter(([_, value]) => !value);
-  
-    if (!selectedOption || selectedOption === 'Selecione uma automação') {
-      setMessage('Aviso: Selecione uma automação válida.');
-    } else if (emptyFields.length > 0) {
-      setMessage('Aviso: Todos os campos devem ser preenchidos.');
-    } else {
-      setIsLoading(true);
-      sessionStorage.setItem('isLoading', 'true');
-      setMessage(`Executando automação: ${selectedOption}.`);
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/executar`;
-  
-      const data = {
-        opcao: selectedOption,
-        user: formFields.user || '',
-        password: formFields.password || '',
-        marca: formFields.marca || '',
-        modelo: formFields.modelo || '',
-        mes: formFields.mes || '',
-      };
-  
-      try {
-        const responseMe = await fetch('/api/auth/me');
-        const authData = await responseMe.json();
-  
-        if (!authData || !authData.token) {
-          throw new Error('Erro ao obter o token de autenticação.');
-        }
-  
-        const token = authData.token;
+    const response = await fetch('/api/auth/getAccessToken');
+    const getAccessToken = await response.json();
 
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify(data),
-        });
+    if (!response.ok || !getAccessToken.accessToken) {
+      setMessage('Erro ao obter o token de autenticação.');
+      return;
+    }
+    const token = getAccessToken.accessToken;
+    console.log(token);
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/executar`;
   
-        if (!response.ok) {
-          const contentType = response.headers.get('Content-Type');
-          if (contentType && contentType.includes('application/json')) {
-            const err = await response.json();
-            throw new Error(err.mensagem);
-          } else {
-            const errText = await response.text();
-            throw new Error(errText);
-          }
-        }
+    const data = {
+      opcao: selectedOption,
+      user: formFields.user || '',
+      password: formFields.password || '',
+      marca: formFields.marca || '',
+      modelo: formFields.modelo || '',
+      mes: formFields.mes || '',
+    };
   
-        const contentType = response.headers.get('Content-Type');
-        if (contentType === 'application/pdf') {
-          const blob = await response.blob();
-          const downloadUrl = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = downloadUrl;
-          link.download = `Fatura_${Date.now()}.pdf`;
-          link.click();
-          setMessage('Automação executada com sucesso.');
-        } else {
-          const data = await response.json();
-          setMessage(data.mensagem);
-        }
-      } catch (error) {
-        setMessage(`Erro ao executar a automação: ${error}`);
-      } finally {
-        setIsLoading(false);
-        sessionStorage.setItem('isLoading', 'false');
-        sessionStorage.clear();
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText);
       }
+  
+      const contentType = response.headers.get('Content-Type');
+      if (contentType === 'application/pdf') {
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `Fatura_${Date.now()}.pdf`;
+        link.click();
+        setMessage('Automação executada com sucesso.');
+      } else {
+        const data = await response.json();
+        setMessage(data.mensagem);
+      }
+    } catch (error) {
+      setMessage(`Erro ao executar a automação: ${error}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 

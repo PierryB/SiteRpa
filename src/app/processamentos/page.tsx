@@ -26,26 +26,31 @@ export default function Processamentos() {
     const fetchTarefas = async () => {
       if (user) {
         try {
-          const response = await fetch('/api/auth/me');
-          const data = await response.json();
-          const accessToken = data.token;
+          const response = await fetch('/api/auth/getAccessToken');
+          const getAccessToken = await response.json();
+
+          console.log(getAccessToken);
+      
+          if (!response.ok || !getAccessToken.accessToken) {
+            throw new Error('Erro ao obter o token de autenticação.');
+          }
+          const token = getAccessToken.accessToken;
+          console.log(token);
           const url = `${process.env.NEXT_PUBLIC_API_URL}/minhas-tarefas`;
 
           const tarefasResponse = await fetch(url, {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           });
 
           if (!tarefasResponse.ok) {
-            throw new Error('Erro ao buscar as tarefas');
+            throw new Error('Erro ao buscar as tarefas.');
           }
 
           const tarefasData = await tarefasResponse.json();
           setTarefas(tarefasData);
-        } catch (err) {
-          console.error(err);
         } finally {
           setLoadingTarefas(false);
         }
