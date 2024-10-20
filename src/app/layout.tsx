@@ -10,6 +10,7 @@ const geistSans = localFont({
   variable: "--font-geist-sans",
   weight: "100 900",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -17,6 +18,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
+  icons: {
+    icon: '/favicon.ico',
+  },
   title: "RPA Boettscher",
 };
 
@@ -27,14 +31,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
-      <UserProvider>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <Header></Header>
-          {children}
+          <UserProvider>
+            <Header></Header>
+            {children}
+          </UserProvider>
         </Providers>
       </body>
-      </UserProvider>
     </html>
   );
 }

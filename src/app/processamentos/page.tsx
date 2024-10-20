@@ -1,39 +1,188 @@
 'use client'
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from "next/navigation";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+type Tarefa = {
+  id: string;
+  status: string;
+  mensagem: string;
+  opcao: string;
+  dataHora: string;
+};
 
 export default function Processamentos() {
   const { user, error, isLoading } = useUser();
   const router = useRouter();
+  const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+  const [loadingTarefas, setLoadingTarefas] = useState(true);
 
   useEffect(() => {
     if (!isLoading && !user) {
       alert("Você precisa estar logado para acessar essa página!");
       router.push('/');
     }
-    else if (user?.email != "test@test.com")
-    {
-      alert("O seu usuário não tem acesso a essa página.");
-      router.push('/');
-    }
   }, [user, isLoading, router]);
 
-  if (isLoading)
-  {
-    return <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">Carregando...</div>
+  useEffect(() => {
+    const fetchTarefas = async () => {
+      if (user) {
+        try {
+          const userEmail = user.email ? user.email : '';
+          const url = `${process.env.NEXT_PUBLIC_API_URL}/minhas-tarefas`;
+
+          const tarefasResponse = await fetch(url, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Email': userEmail,
+            },
+          });
+
+          if (!tarefasResponse.ok) {
+            throw new Error('Erro ao buscar as tarefas.');
+          }
+
+          const tarefasData = await tarefasResponse.json();
+          setTarefas(tarefasData);
+        } catch (error) {
+          console.error('Erro ao buscar as tarefas:', error);
+        } finally {
+          setLoadingTarefas(false);
+        }
+      }
+    };
+    fetchTarefas();
+  }, [user]);
+
+  const formatDataHora = (dataHora: string) => {
+    const [data, hora] = dataHora.split(', ');
+    return { data, hora };
+  };
+
+  const handleView = async (id: string) => {
+    if (!id) {
+      alert('ID da execução não encontrado.');
+      return;
+    }
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/status/${id}`;
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Email': user?.email || '',
+        },
+      });
+
+      if (response.ok) {
+        const contentType = response.headers.get('Content-Type');
+        if (contentType === 'application/pdf') {
+          const blob = await response.blob();
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = `Fatura_${Date.now()}.pdf`;
+          link.click();
+        } else {
+          const data = await response.json();
+          alert(`${data.mensagem}`);
+        }
+      } else {
+        alert('Erro ao abrir a execução.');
+      }
+    } catch (error) {
+      console.error('Erro ao abrir a execução:', error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const confirmDelete = window.confirm('Você tem certeza que deseja excluir esta execução?');
+    if (!confirmDelete) return;
+  
+    if (!id || id === 'undefined') {
+      alert('ID da execução não é válido.');
+      return;
+    }
+  
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/excluir/${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Email': user?.email || '',
+        },
+      });
+  
+      if (response.ok) {
+        setTarefas(tarefas.filter(tarefa => tarefa.id !== id));
+        alert('Execução excluída com sucesso.');
+      } else {
+        alert('Erro ao excluir a execução.');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir a execução:', error);
+    }
+  };  
+
+  if (isLoading || loadingTarefas) {
+    return <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-mono)]">Carregando...</div>;
   }
-  else if (error)
-  {
-    return <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">Erro: {error.message}</div>
+
+  if (error) {
+    return <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-mono)]">Erro: {error.message}</div>;
   }
 
   if (user) {
     return (
-      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-        <main className="flex flex-col gap-8 row-start-2 items-center justify-center sm:items-start text-4xl font-[family-name:var(--font-geist-mono)]">
-          Bem vindo à página de Processamentos
-        </main>
+      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-20 font-[family-name:var(--font-geist-mono)]">
+        <h1 className="flex flex-col text-3xl gap-8 row-start-4 sm:items-start">
+          Processamentos
+        </h1>
+
+        <div className="flex flex-col p-8 text-xl row-start-5 items-center justify-center">
+          {tarefas.length === 0 ? (
+            <p>Você não tem tarefas pendentes...</p>
+          ) : (
+            <table className="min-w-full border-collapse border border-gray-300">
+              <thead>
+                <tr>
+                  <th className="border border-gray-300 p-2">Nome da Execução</th>
+                  <th className="border border-gray-300 p-2">Data</th>
+                  <th className="border border-gray-300 p-2">Hora</th>
+                  <th className="border border-gray-300 p-2">Status</th>
+                  <th className="border border-gray-300 p-2">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tarefas.map((tarefa) => {
+                  const { data, hora } = formatDataHora(tarefa.dataHora);
+                  return (
+                    <tr key={tarefa.id} className="text-center">
+                      <td className="border border-gray-300 p-2">{tarefa.opcao}</td>
+                      <td className="border border-gray-300 p-2">{data}</td>
+                      <td className="border border-gray-300 p-2">{hora}</td>
+                      <td className="border border-gray-300 p-2">{tarefa.status}</td>
+                      <td className="border border-gray-300 p-2">
+                        <button 
+                          className="mr-2 bg-blue-500 text-white px-4 py-1 rounded"
+                          onClick={() => handleView(tarefa.id)}
+                        >
+                          Abrir
+                        </button>
+                        <button 
+                          className="bg-red-500 text-white px-4 py-1 rounded"
+                          onClick={() => handleDelete(tarefa.id)}
+                        >
+                          Excluir
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     );
   }

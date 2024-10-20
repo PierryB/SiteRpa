@@ -2,13 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tema claro */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
-/* Tema escuro */
 html.dark {
   --background: #171717;
   --foreground: #ffffff;
