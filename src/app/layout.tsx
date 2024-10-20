@@ -19,11 +19,10 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   icons: {
-    icon: '/rpa.ico',
+    icon: '/favicon.ico',
   },
   title: "RPA Boettscher",
 };
-
 
 export default function RootLayout({
   children,
@@ -32,14 +31,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
-      <UserProvider>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <Header></Header>
-          {children}
+          <UserProvider>
+            <Header></Header>
+            {children}
+          </UserProvider>
         </Providers>
       </body>
-      </UserProvider>
     </html>
   );
 }

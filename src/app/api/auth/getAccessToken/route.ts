@@ -1,14 +1,19 @@
-import { NextResponse } from 'next/server';
-import { getAccessToken } from '@auth0/nextjs-auth0';
+var axios = require("axios").default;
 
-export async function GET() {
-  try {
-    const { accessToken } = await getAccessToken();
-    if (!accessToken) {
-      return NextResponse.json({ error: 'Token não encontrado' }, { status: 401 });
-    }
-    return NextResponse.json({ accessToken }, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Erro ao obter o token de acesso' }, { status: 500 });
-  }
-}
+var options = {
+  method: 'POST',
+  url: `${process.env.AUTH0_ISSUER_BASE_URL}/oauth/token`,
+  headers: {'content-type': 'application/x-www-form-urlencoded'},
+  data: new URLSearchParams({
+    grant_type: 'client_credentials',
+    client_id: `${process.env.AUTH0_CLIENT_ID}`,
+    client_secret: `${process.env.AUTH0_CLIENT_SECRET}`,
+    audience: `${process.env.AUTH0_API_AUDIENCE}`
+  })
+};
+
+axios.request(options).then(function (response) {
+  console.log(response.data);
+}).catch(function (error) {
+  console.error(error);
+});

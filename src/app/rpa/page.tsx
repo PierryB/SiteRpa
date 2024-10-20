@@ -85,15 +85,21 @@ export default function Rpa() {
   };
 
   const handleExecute = async () => {
-    const response = await fetch('/api/auth/getAccessToken');
-    const getAccessToken = await response.json();
-
-    if (!response.ok || !getAccessToken.accessToken) {
-      setMessage('Erro ao obter o token de autenticação.');
+    if (!user?.email) {
+      setMessage('Erro: E-mail do usuário não encontrado.');
       return;
     }
-    const token = getAccessToken.accessToken;
-    console.log(token);
+    const requiredFields = selectedOption === '1. Download PDF Católica'
+      ? ['user', 'password']
+      : ['marca', 'modelo', 'mes'];
+  
+    const emptyFields = requiredFields.filter(field => !formFields[field]);
+  
+    if (emptyFields.length > 0) {
+      setMessage(`Aviso: Não devem haver campos vazios`);
+      return;
+    }
+  
     const url = `${process.env.NEXT_PUBLIC_API_URL}/executar`;
   
     const data = {
@@ -103,14 +109,17 @@ export default function Rpa() {
       marca: formFields.marca || '',
       modelo: formFields.modelo || '',
       mes: formFields.mes || '',
+      userEmail: user.email,
     };
   
     try {
+      setIsLoading(true);
+  
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Email': user.email,
         },
         body: JSON.stringify(data),
       });
@@ -130,15 +139,15 @@ export default function Rpa() {
         link.click();
         setMessage('Automação executada com sucesso.');
       } else {
-        const data = await response.json();
-        setMessage(data.mensagem);
+        const responseData = await response.json();
+        setMessage(responseData.mensagem);
       }
     } catch (error) {
       setMessage(`Erro ao executar a automação: ${error}`);
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   setTimeout(() => {
     setMessage(null);
