@@ -2,25 +2,24 @@
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
+import { useRef } from 'react';
 
 export default function Rpa() {
   const { user, isLoading: authLoading } = useUser();
   const router = useRouter();
-
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [formFields, setFormFields] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const options = ['Selecione uma automação', '1. Download PDF Católica', '2. Relatório FIPE'];
+  const [file, setFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const options = ['Selecione uma automação', '1. Download PDF Católica', '2. Relatório FIPE', '3. Consulta CNPJs'];
 
   useEffect(() => {
     if (!user && !authLoading) {
       alert("Você precisa estar logado para acessar essa página.");
       router.push('/');
-    }
-    else{
-      
     }
   }, [user, authLoading, router]);
 
@@ -71,7 +70,10 @@ export default function Rpa() {
     } else if (option === '1. Download PDF Católica') {
       setFormFields({ user: '', password: '' });
     } else if (option === '2. Relatório FIPE') {
-      setFormFields({ marca: '', modelo: '', mes: '' });
+      setFormFields({ mes: '' });
+    } else if (option === '3. Consulta CNPJs') {
+      setFormFields({  });
+      setFile(null);
     }
 
     setIsOpen(false);
@@ -84,33 +86,74 @@ export default function Rpa() {
     }));
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+  
+    if (selectedFile) {
+      const validMimeTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      ];
+  
+      const isValidFileType =
+        validMimeTypes.includes(selectedFile.type) ||
+        selectedFile.name.toLowerCase().endsWith('.xlsx');
+  
+      if (!isValidFileType) {
+        setMessage('Erro: O arquivo deve ser do tipo .xlsx.');
+  
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+  
+        setFile(null);
+        return;
+      }
+  
+      setFile(selectedFile);
+      setMessage('Arquivo anexado com sucesso.');
+    }
+  };  
+
   const handleExecute = async () => {
     if (!user?.email) {
       setMessage('Erro: E-mail do usuário não encontrado.');
       return;
     }
-    const requiredFields = selectedOption === '1. Download PDF Católica'
-      ? ['user', 'password']
-      : ['marca', 'modelo', 'mes'];
   
-    const emptyFields = requiredFields.filter(field => !formFields[field]);
+    const requiredFields =
+      selectedOption === '1. Download PDF Católica'
+        ? ['user', 'password']
+        : selectedOption === '2. Relatório FIPE'
+        ? ['mes']
+        : selectedOption === '3. Consulta CNPJs'
+        ? ['file']
+        : [];
+  
+    const emptyFields = requiredFields.filter((field) => {
+      if (field === 'file') {
+        return !file;
+      }
+      return !formFields[field];
+    });
   
     if (emptyFields.length > 0) {
-      setMessage(`Aviso: Não devem haver campos vazios`);
+      setMessage('Aviso: Não devem haver campos vazios.');
       return;
     }
   
     const url = `${process.env.NEXT_PUBLIC_API_URL}/executar`;
+    const formData = new FormData();
+    formData.append('opcao', selectedOption);
+    formData.append('userEmail', user.email);
   
-    const data = {
-      opcao: selectedOption,
-      user: formFields.user || '',
-      password: formFields.password || '',
-      marca: formFields.marca || '',
-      modelo: formFields.modelo || '',
-      mes: formFields.mes || '',
-      userEmail: user.email,
-    };
+    if (selectedOption === '1. Download PDF Católica') {
+      formData.append('user', formFields.user || '');
+      formData.append('password', formFields.password || '');
+    } else if (selectedOption === '2. Relatório FIPE') {
+      formData.append('mes', formFields.mes || '');
+    } else if (selectedOption === '3. Consulta CNPJs' && file) {
+      formData.append('file', file);
+    }
   
     try {
       setIsLoading(true);
@@ -118,30 +161,17 @@ export default function Rpa() {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Email': user.email,
         },
-        body: JSON.stringify(data),
+        body: formData,
       });
   
+      const responseData = await response.json();
       if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText);
+        throw new Error(responseData.mensagem || 'Erro ao executar a automação.');
       }
   
-      const contentType = response.headers.get('Content-Type');
-      if (contentType === 'application/pdf') {
-        const blob = await response.blob();
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `Fatura_${Date.now()}.pdf`;
-        link.click();
-        setMessage('Automação executada com sucesso.');
-      } else {
-        const responseData = await response.json();
-        setMessage(responseData.mensagem);
-      }
+      setMessage(responseData.mensagem || 'Automação executada com sucesso.');
     } catch (error) {
       setMessage(`Erro ao executar a automação: ${error}`);
     } finally {
@@ -278,66 +308,19 @@ export default function Rpa() {
                       disabled={isLoading}
                     />
                   </form>
-
                 </div>
               )}
 
               {selectedOption === '2. Relatório FIPE' && (
-                <div className="flex flex-col grid row-start-6 items-center justify-center"
-                      style=
-                      {{
-                        width: '100%'
-                      }}>
+                <div className="flex flex-col grid row-start-6 items-center justify-center" style={{ width: '100%' }}>
                   <form className="flex flex-col grid row-start-6 items-center justify-center">
                     <input 
                       type="text"
-                      placeholder="Marca Veículo"
+                      placeholder="Mês Referência (MM/yyyy)"
                       autoComplete="off"
                       className="input-field"
-                      style=
-                      {{
+                      style={{
                         marginBottom: '10px',
-                        padding: '8px',
-                        width: '100%',
-                        borderRadius: '4px',
-                        backgroundColor: 'var(--background)',
-                        color: 'var(--foreground)',
-                        border: '2px solid var(--foreground)',
-                        opacity: isLoading ? 0.5 : 1,
-                        cursor: isLoading ? 'not-allowed' : 'auto'
-                      }}
-                      value={formFields.marca || ''}
-                      onChange={(e) => handleInputChange('marca', e.target.value)}
-                      disabled={isLoading}
-                    />
-                    <input 
-                      type="text"
-                      placeholder="Modelo Veículo"
-                      autoComplete="off"
-                      className="input-field"
-                      style=
-                      {{
-                        marginBottom: '10px',
-                        padding: '8px',
-                        width: '100%',
-                        borderRadius: '4px',
-                        backgroundColor: 'var(--background)',
-                        color: 'var(--foreground)',
-                        border: '2px solid var(--foreground)',
-                        opacity: isLoading ? 0.5 : 1,
-                        cursor: isLoading ? 'not-allowed' : 'auto'
-                      }}
-                      value={formFields.modelo || ''}
-                      onChange={(e) => handleInputChange('modelo', e.target.value)}
-                      disabled={isLoading}
-                    />
-                    <input 
-                      type="text"
-                      placeholder="Ano Veículo"
-                      autoComplete="off"
-                      className="input-field"
-                      style=
-                      {{
                         padding: '8px',
                         width: '100%',
                         borderRadius: '4px',
@@ -350,7 +333,58 @@ export default function Rpa() {
                       value={formFields.mes || ''}
                       onChange={(e) => handleInputChange('mes', e.target.value)}
                       disabled={isLoading}
+                      pattern="^(0[1-9]|1[0-2])/([0-9]{4})$"
+                      title="Formato esperado: MM/yyyy"
                     />
+                  </form>
+                </div>
+              )}
+
+              {selectedOption === '3. Consulta CNPJs' && (
+                <div className="flex flex-col grid row-start-6 items-center justify-center" style={{ width: '100%' }}>
+                  <form className="flex flex-col grid row-start-6 items-center justify-center">
+                    {!file ? (
+                      <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".xlsx"
+                      className="input-field"
+                      style={{
+                        marginBottom: '10px',
+                        padding: '8px',
+                        width: '100%',
+                        borderRadius: '4px',
+                        backgroundColor: 'var(--background)',
+                        color: 'var(--foreground)',
+                        border: '2px solid var(--foreground)',
+                        opacity: isLoading ? 0.5 : 1,
+                        cursor: isLoading ? 'not-allowed' : 'auto',
+                      }}
+                      onChange={handleFileChange}
+                      disabled={isLoading}
+                    />                    
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                        <span style={{ marginRight: '10px', color: 'var(--foreground)' }}>
+                          {file.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setFile(null)}
+                          style={{
+                            color: 'red',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            border: 'none',
+                            background: 'transparent',
+                            fontSize: '20px',
+                          }}
+                          disabled={isLoading}
+                        >
+                          ✖
+                        </button>
+                      </div>
+                    )}
                   </form>
                 </div>
               )}

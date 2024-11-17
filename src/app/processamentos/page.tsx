@@ -72,9 +72,10 @@ export default function Processamentos() {
           'Email': user?.email || '',
         },
       });
-
+  
       if (response.ok) {
         const contentType = response.headers.get('Content-Type');
+  
         if (contentType === 'application/pdf') {
           const blob = await response.blob();
           const downloadUrl = window.URL.createObjectURL(blob);
@@ -82,7 +83,16 @@ export default function Processamentos() {
           link.href = downloadUrl;
           link.download = `Fatura_${Date.now()}.pdf`;
           link.click();
-        } else {
+        }
+        else if (contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+          const blob = await response.blob();
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = `Relatorio_${Date.now()}.xlsx`;
+          link.click();
+        }
+        else {
           const data = await response.json();
           alert(`${data.mensagem}`);
         }
@@ -91,8 +101,9 @@ export default function Processamentos() {
       }
     } catch (error) {
       console.error('Erro ao abrir a execução:', error);
+      alert('Erro inesperado ao abrir a execução.');
     }
-  };
+  };  
 
   const handleDelete = async (id: string) => {
     const confirmDelete = window.confirm('Você tem certeza que deseja excluir esta execução?');
