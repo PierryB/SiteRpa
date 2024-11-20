@@ -284,8 +284,7 @@ export default function Rpa() {
                         backgroundColor: 'var(--background)',
                         color: 'var(--foreground)',
                         border: '2px solid var(--foreground)',
-                        opacity: getOpacity(isLoading),
-                        cursor: getCursor(isLoading)
+                        opacity: getOpacity(isLoading)
                       }}
                       value={formFields.user || ''}
                       onChange={(e) => handleInputChange('user', e.target.value)}
@@ -304,8 +303,7 @@ export default function Rpa() {
                         backgroundColor: 'var(--background)',
                         color: 'var(--foreground)',
                         border: '2px solid var(--foreground)',
-                        opacity: getOpacity(isLoading),
-                        cursor: getCursor(isLoading)
+                        opacity: getOpacity(isLoading)
                       }}
                       value={formFields.password || ''}
                       onChange={(e) => handleInputChange('password', e.target.value)}
