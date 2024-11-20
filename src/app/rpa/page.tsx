@@ -195,16 +195,10 @@ export default function Rpa() {
     return (
       <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-20 pb-20 font-[family-name:var(--font-geist-mono)]">
         <div className="mt-4 flex flex-col gap-8 row-start-4 items-center justify-center sm:items-start" style={{ position: 'relative', display: 'inline-block', userSelect: 'none' }}>
-        <div
+        <button
           className="text-2xl"
-          role="button"
-          tabIndex={0}
-          onClick={isLoading ? getDisabledOnClickHandler() : getEnabledOnClickHandler(toggleDropdown)}
-          onKeyDown={(e) => {
-            if (!isLoading && (e.key === 'Enter' || e.key === ' ')) {
-              toggleDropdown();
-            }
-          }}
+          onClick={toggleDropdown}
+          disabled={isLoading}
           style={{
             cursor: getCursor(isLoading),
             padding: '10px',
@@ -219,7 +213,7 @@ export default function Rpa() {
           <span style={{ marginLeft: '16px' }}>
             {isOpen ? '▲' : '▼'}
           </span>
-        </div>
+        </button>
 
           {isOpen && (
             <ul className="flex flex-col row-start-4 items-center justify-center sm:items-start text-1xl"
