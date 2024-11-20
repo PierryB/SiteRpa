@@ -59,11 +59,12 @@ export default function Processamentos() {
       const [data, hora] = dataHora.split(', ');
       const [month, day, year] = data.split('/');
       const isPM = hora.includes('PM');
-      let [hours, minutes, seconds] = hora.replace(' PM', '').replace(' AM', '').split(':');
-      
-      if (isPM && hours !== '12') {
-        hours = (parseInt(hours, 10) + 12).toString();
-      } else if (!isPM && hours === '12') {
+      const [hoursRaw, minutes, seconds] = hora.replace(' PM', '').replace(' AM', '').split(':');
+  
+      let hours = hoursRaw;
+      if (isPM && hoursRaw !== '12') {
+        hours = (parseInt(hoursRaw, 10) + 12).toString();
+      } else if (!isPM && hoursRaw === '12') {
         hours = '00';
       }
   
@@ -85,7 +86,7 @@ export default function Processamentos() {
     } catch (error) {
       return { data: 'Data inválida', hora: 'Hora inválida' };
     }
-  };  
+  };   
 
   const handleView = async (id: string) => {
     if (!id) {
