@@ -56,7 +56,13 @@ export default function Processamentos() {
 
   const formatDataHora = (dataHora: string) => {
     const [data, hora] = dataHora.split(', ');
-    return { data, hora };
+    const [day, month, year] = data.split('/');
+    const dateObj = new Date(`${year}-${month}-${day}T${hora}`);
+  
+    return {
+      data: dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      hora: dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    };
   };
 
   const handleView = async (id: string) => {
