@@ -55,19 +55,37 @@ export default function Processamentos() {
   }, [user]);
 
   const formatDataHora = (dataHora: string) => {
-    console.log(dataHora);
-    console.log('=====');
-    const [data, hora] = dataHora.split(', ');
-    console.log(data);
-    console.log(hora);
-    const [day, month, year] = data.split('/');
-    const dateObj = new Date(`${year}-${month}-${day}T${hora}`);
+    try {
+      const [data, hora] = dataHora.split(', ');
+      const [month, day, year] = data.split('/');
+      const isPM = hora.includes('PM');
+      let [hours, minutes, seconds] = hora.replace(' PM', '').replace(' AM', '').split(':');
+      
+      if (isPM && hours !== '12') {
+        hours = (parseInt(hours, 10) + 12).toString();
+      } else if (!isPM && hours === '12') {
+        hours = '00';
+      }
   
-    return {
-      data: dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-      hora: dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-    };
-  };
+      const formattedDateString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      const dateObj = new Date(formattedDateString);
+  
+      return {
+        data: dateObj.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        }),
+        hora: dateObj.toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+      };
+    } catch (error) {
+      return { data: 'Data inválida', hora: 'Hora inválida' };
+    }
+  };  
 
   const handleView = async (id: string) => {
     if (!id) {
