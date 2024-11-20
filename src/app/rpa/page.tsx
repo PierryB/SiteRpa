@@ -1,8 +1,7 @@
 'use client';
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from 'react';
-import { useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export default function Rpa() {
   const { user, isLoading: authLoading } = useUser();
@@ -15,6 +14,9 @@ export default function Rpa() {
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const options = ['Selecione uma automação', '1. Download PDF Católica', '2. Relatório FIPE', '3. Consulta CNPJs'];
+  
+  const getOpacity = (isLoading: boolean) => (isLoading ? 0.5 : 1);
+  const getCursor = (isLoading: boolean) => (isLoading ? 'not-allowed' : 'pointer');
 
   useEffect(() => {
     if (!user && !authLoading) {
@@ -187,23 +189,25 @@ export default function Rpa() {
     return (
       <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-20 pb-20 font-[family-name:var(--font-geist-mono)]">
         <div className="mt-4 flex flex-col gap-8 row-start-4 items-center justify-center sm:items-start" style={{ position: 'relative', display: 'inline-block', userSelect: 'none' }}>
-          <div className="text-2xl"
-               onClick={!isLoading ? toggleDropdown : undefined}
-               style=
-               {{
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  padding: '10px',
-                  border: '1px solid',
-                  borderRadius: '4px',
-                  width: '500px',
-                  textAlign: 'center',
-                  opacity: isLoading ? 0.5 : 1
-                }}>
-            {selectedOption ? selectedOption : 'Selecione uma automação'}
-            <span style={{ marginLeft: '16px' }}>
-              {isOpen ? '▲' : '▼'}
-            </span>
-          </div>
+        <button
+          className="text-2xl"
+          onClick={toggleDropdown}
+          disabled={isLoading}
+          style={{
+            cursor: getCursor(isLoading),
+            padding: '10px',
+            border: '1px solid',
+            borderRadius: '4px',
+            width: '500px',
+            textAlign: 'center',
+            opacity: getOpacity(isLoading),
+          }}
+        >
+          {selectedOption ? selectedOption : 'Selecione uma automação'}
+          <span style={{ marginLeft: '16px' }}>
+            {isOpen ? '▲' : '▼'}
+          </span>
+        </button>
 
           {isOpen && (
             <ul className="flex flex-col row-start-4 items-center justify-center sm:items-start text-1xl"
@@ -280,8 +284,8 @@ export default function Rpa() {
                         backgroundColor: 'var(--background)',
                         color: 'var(--foreground)',
                         border: '2px solid var(--foreground)',
-                        opacity: isLoading ? 0.5 : 1,
-                        cursor: isLoading ? 'not-allowed' : 'auto'
+                        opacity: getOpacity(isLoading),
+                        cursor: getCursor(isLoading)
                       }}
                       value={formFields.user || ''}
                       onChange={(e) => handleInputChange('user', e.target.value)}
@@ -300,8 +304,8 @@ export default function Rpa() {
                         backgroundColor: 'var(--background)',
                         color: 'var(--foreground)',
                         border: '2px solid var(--foreground)',
-                        opacity: isLoading ? 0.5 : 1,
-                        cursor: isLoading ? 'not-allowed' : 'auto'
+                        opacity: getOpacity(isLoading),
+                        cursor: getCursor(isLoading)
                       }}
                       value={formFields.password || ''}
                       onChange={(e) => handleInputChange('password', e.target.value)}
@@ -327,8 +331,8 @@ export default function Rpa() {
                         backgroundColor: 'var(--background)',
                         color: 'var(--foreground)',
                         border: '2px solid var(--foreground)',
-                        opacity: isLoading ? 0.5 : 1,
-                        cursor: isLoading ? 'not-allowed' : 'auto'
+                        opacity: getOpacity(isLoading),
+                        cursor: getCursor(isLoading)
                       }}
                       value={formFields.mes || ''}
                       onChange={(e) => handleInputChange('mes', e.target.value)}
@@ -357,8 +361,8 @@ export default function Rpa() {
                         backgroundColor: 'var(--background)',
                         color: 'var(--foreground)',
                         border: '2px solid var(--foreground)',
-                        opacity: isLoading ? 0.5 : 1,
-                        cursor: isLoading ? 'not-allowed' : 'auto',
+                        opacity: getOpacity(isLoading),
+                        cursor: getCursor(isLoading)
                       }}
                       onChange={handleFileChange}
                       disabled={isLoading}
@@ -404,10 +408,10 @@ export default function Rpa() {
                 color: 'var(--background)',
                 border: 'none',
                 borderRadius: '4px',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
+                cursor: getCursor(isLoading),
                 fontSize: '16px',
                 userSelect: 'none',
-                opacity: isLoading ? 0.5 : 1
+                opacity: getOpacity(isLoading)
             }}
             disabled={isLoading}
           >
