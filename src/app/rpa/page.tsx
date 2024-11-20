@@ -329,14 +329,11 @@ export default function Rpa() {
                         backgroundColor: 'var(--background)',
                         color: 'var(--foreground)',
                         border: '2px solid var(--foreground)',
-                        opacity: getOpacity(isLoading),
-                        cursor: getCursor(isLoading)
+                        opacity: getOpacity(isLoading)
                       }}
                       value={formFields.mes || ''}
                       onChange={(e) => handleInputChange('mes', e.target.value)}
                       disabled={isLoading}
-                      pattern="^(0[1-9]|1[0-2])/([0-9]{4})$"
-                      title="Formato esperado: MM/yyyy"
                     />
                   </form>
                 </div>
