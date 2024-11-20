@@ -55,7 +55,11 @@ export default function Processamentos() {
   }, [user]);
 
   const formatDataHora = (dataHora: string) => {
+    console.log(dataHora);
+    console.log('=====');
     const [data, hora] = dataHora.split(', ');
+    console.log(data);
+    console.log(hora);
     const [day, month, year] = data.split('/');
     const dateObj = new Date(`${year}-${month}-${day}T${hora}`);
   
