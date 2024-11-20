@@ -17,12 +17,6 @@ export default function Rpa() {
   
   const getOpacity = (isLoading: boolean) => (isLoading ? 0.5 : 1);
   const getCursor = (isLoading: boolean) => (isLoading ? 'not-allowed' : 'pointer');
-  const getEnabledOnClickHandler = (handler: () => void): (() => void) => {
-    return handler;
-  };
-  const getDisabledOnClickHandler = (): undefined => {
-    return undefined;
-  };
 
   useEffect(() => {
     if (!user && !authLoading) {
