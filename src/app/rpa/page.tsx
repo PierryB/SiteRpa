@@ -122,21 +122,18 @@ export default function Rpa() {
       return;
     }
   
-    const requiredFields =
-      selectedOption === '1. Download PDF Católica'
-        ? ['user', 'password']
-        : selectedOption === '2. Relatório FIPE'
-        ? ['mes']
-        : selectedOption === '3. Consulta CNPJs'
-        ? ['file']
-        : [];
+    type OptionKeys = '1. Download PDF Católica' | '2. Relatório FIPE' | '3. Consulta CNPJs';
   
-    const emptyFields = requiredFields.filter((field) => {
-      if (field === 'file') {
-        return !file;
-      }
-      return !formFields[field];
-    });
+    const requiredFieldsMap: Record<OptionKeys, string[]> = {
+      '1. Download PDF Católica': ['user', 'password'],
+      '2. Relatório FIPE': ['mes'],
+      '3. Consulta CNPJs': ['file'],
+    };
+  
+    const requiredFields = requiredFieldsMap[selectedOption as OptionKeys] || [];
+    const emptyFields = requiredFields.filter(
+      (field) => (field === 'file' ? !file : !formFields[field])
+    );
   
     if (emptyFields.length > 0) {
       setMessage('Aviso: Não devem haver campos vazios.');
@@ -145,30 +142,39 @@ export default function Rpa() {
   
     const url = `${process.env.NEXT_PUBLIC_API_URL}/executar`;
     const formData = new FormData();
+  
     formData.append('opcao', selectedOption);
     formData.append('userEmail', user.email);
   
-    if (selectedOption === '1. Download PDF Católica') {
-      formData.append('user', formFields.user || '');
-      formData.append('password', formFields.password || '');
-    } else if (selectedOption === '2. Relatório FIPE') {
-      formData.append('mes', formFields.mes || '');
-    } else if (selectedOption === '3. Consulta CNPJs' && file) {
-      formData.append('file', file);
+    const appendFieldData: Record<OptionKeys, () => void> = {
+      '1. Download PDF Católica': () => {
+        formData.append('user', formFields.user || '');
+        formData.append('password', formFields.password || '');
+      },
+      '2. Relatório FIPE': () => {
+        formData.append('mes', formFields.mes || '');
+      },
+      '3. Consulta CNPJs': () => {
+        if (file) formData.append('file', file);
+      },
+    };
+  
+    if (appendFieldData[selectedOption as OptionKeys]) {
+      appendFieldData[selectedOption as OptionKeys]();
     }
   
     try {
       setIsLoading(true);
-  
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Email': user.email,
+          Email: user.email,
         },
         body: formData,
       });
   
       const responseData = await response.json();
+  
       if (!response.ok) {
         throw new Error(responseData.mensagem || 'Erro ao executar a automação.');
       }
@@ -179,7 +185,7 @@ export default function Rpa() {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
 
   setTimeout(() => {
     setMessage(null);
