@@ -17,8 +17,11 @@ export default function Rpa() {
   
   const getOpacity = (isLoading: boolean) => (isLoading ? 0.5 : 1);
   const getCursor = (isLoading: boolean) => (isLoading ? 'not-allowed' : 'pointer');
-  const getOnClickHandler = (isLoading: boolean, handler: () => void): (() => void) | undefined => {
-    return !isLoading ? handler : undefined;
+  const getEnabledOnClickHandler = (handler: () => void): (() => void) => {
+    return handler;
+  };
+  const getDisabledOnClickHandler = (): undefined => {
+    return undefined;
   };
 
   useEffect(() => {
@@ -192,23 +195,31 @@ export default function Rpa() {
     return (
       <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-20 pb-20 font-[family-name:var(--font-geist-mono)]">
         <div className="mt-4 flex flex-col gap-8 row-start-4 items-center justify-center sm:items-start" style={{ position: 'relative', display: 'inline-block', userSelect: 'none' }}>
-          <div className="text-2xl"
-               onClick={getOnClickHandler(isLoading, toggleDropdown)}
-               style=
-               {{
-                  cursor: getCursor(isLoading),
-                  padding: '10px',
-                  border: '1px solid',
-                  borderRadius: '4px',
-                  width: '500px',
-                  textAlign: 'center',
-                  opacity: getOpacity(isLoading)
-                }}>
-            {selectedOption ? selectedOption : 'Selecione uma automação'}
-            <span style={{ marginLeft: '16px' }}>
-              {isOpen ? '▲' : '▼'}
-            </span>
-          </div>
+        <div
+          className="text-2xl"
+          role="button"
+          tabIndex={0}
+          onClick={isLoading ? getDisabledOnClickHandler() : getEnabledOnClickHandler(toggleDropdown)}
+          onKeyDown={(e) => {
+            if (!isLoading && (e.key === 'Enter' || e.key === ' ')) {
+              toggleDropdown();
+            }
+          }}
+          style={{
+            cursor: getCursor(isLoading),
+            padding: '10px',
+            border: '1px solid',
+            borderRadius: '4px',
+            width: '500px',
+            textAlign: 'center',
+            opacity: getOpacity(isLoading),
+          }}
+        >
+          {selectedOption ? selectedOption : 'Selecione uma automação'}
+          <span style={{ marginLeft: '16px' }}>
+            {isOpen ? '▲' : '▼'}
+          </span>
+        </div>
 
           {isOpen && (
             <ul className="flex flex-col row-start-4 items-center justify-center sm:items-start text-1xl"
