@@ -57,19 +57,14 @@ export default function Processamentos() {
   const formatDataHora = (dataHora: string) => {
     try {
       const [data, hora] = dataHora.split(', ');
-      const [month, day, year] = data.split('/');
-      const isPM = hora.includes('PM');
-      const [hoursRaw, minutes, seconds] = hora.replace(' PM', '').replace(' AM', '').split(':');
-  
-      let hours = hoursRaw;
-      if (isPM && hoursRaw !== '12') {
-        hours = (parseInt(hoursRaw, 10) + 12).toString();
-      } else if (!isPM && hoursRaw === '12') {
-        hours = '00';
-      }
-  
-      const formattedDateString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      const [day, month, year] = data.split('/');
+      const [hours, minutes, seconds] = hora.split(':');
+      const formattedDateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours}:${minutes}:${seconds}`;
       const dateObj = new Date(formattedDateString);
+  
+      if (isNaN(dateObj.getTime())) {
+        throw new Error('Invalid date');
+      }
   
       return {
         data: dateObj.toLocaleDateString('pt-BR', {
@@ -86,7 +81,7 @@ export default function Processamentos() {
     } catch (error) {
       return { data: 'Data inválida', hora: 'Hora inválida' };
     }
-  };   
+  };
 
   const handleView = async (id: string) => {
     if (!id) {
@@ -104,24 +99,19 @@ export default function Processamentos() {
   
       if (response.ok) {
         const contentType = response.headers.get('Content-Type');
+        const contentDisposition = response.headers.get('Content-Disposition');
+        const fileName = contentDisposition
+          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+          : `arquivo_${Date.now()}`;
   
-        if (contentType === 'application/pdf') {
+        if (contentType === 'application/pdf' || contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
           const blob = await response.blob();
           const downloadUrl = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = downloadUrl;
-          link.download = `Fatura_${Date.now()}.pdf`;
+          link.download = fileName || `arquivo_${Date.now()}`;
           link.click();
-        }
-        else if (contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-          const blob = await response.blob();
-          const downloadUrl = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = downloadUrl;
-          link.download = `Relatorio_${Date.now()}.xlsx`;
-          link.click();
-        }
-        else {
+        } else {
           const data = await response.json();
           alert(`${data.mensagem}`);
         }
@@ -132,7 +122,7 @@ export default function Processamentos() {
       console.error('Erro ao abrir a execução:', error);
       alert('Erro inesperado ao abrir a execução.');
     }
-  };  
+  };
 
   const handleDelete = async (id: string) => {
     const confirmDelete = window.confirm('Você tem certeza que deseja excluir esta execução?');
@@ -155,14 +145,13 @@ export default function Processamentos() {
   
       if (response.ok) {
         setTarefas(tarefas.filter(tarefa => tarefa.id !== id));
-        alert('Execução excluída com sucesso.');
       } else {
         alert('Erro ao excluir a execução.');
       }
     } catch (error) {
       console.error('Erro ao excluir a execução:', error);
     }
-  };  
+  };
 
   if (isLoading || loadingTarefas) {
     return <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-mono)]">Carregando...</div>;
