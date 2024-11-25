@@ -57,9 +57,10 @@ export default function Processamentos() {
   const formatDataHora = (dataHora: string) => {
     try {
       const [data, hora] = dataHora.split(', ');
+
       const dataParts = data.split('/');
       let day, month, year;
-  
+
       if (dataParts.length === 3) {
         if (parseInt(dataParts[0], 10) <= 12 && parseInt(dataParts[1], 10) <= 31) {
           month = dataParts[0];
@@ -73,15 +74,23 @@ export default function Processamentos() {
       } else {
         throw new Error('Formato de data inválido');
       }
-  
-      const [hours, minutes, seconds] = hora.split(':');
+
+      const [time, period] = hora.split(' ');
+      let [hours, minutes, seconds] = time.split(':');
+
+      if (period && (period.toUpperCase() === 'PM' && parseInt(hours, 10) < 12)) {
+        hours = (parseInt(hours, 10) + 12).toString();
+      } else if (period && period.toUpperCase() === 'AM' && parseInt(hours, 10) === 12) {
+        hours = '00';
+      }
+
       const formattedDateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours}:${minutes}:${seconds}`;
       const dateObj = new Date(formattedDateString);
 
       if (isNaN(dateObj.getTime())) {
         throw new Error('Data inválida');
       }
-  
+
       return {
         data: dateObj.toLocaleDateString('pt-BR', {
           day: '2-digit',
@@ -201,6 +210,8 @@ export default function Processamentos() {
               <tbody>
                 {tarefas.map((tarefa) => {
                   const { data, hora } = formatDataHora(tarefa.dataHora);
+                  console.log(tarefa.dataHora);
+                  console.log(data + "|||" + hora);
                   return (
                     <tr key={tarefa.id} className="text-center">
                       <td className="border border-gray-300 p-2">{tarefa.opcao}</td>
