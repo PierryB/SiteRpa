@@ -57,7 +57,6 @@ export default function Processamentos() {
   const formatDataHora = (dataHora: string) => {
     try {
       const [data, hora] = dataHora.split(', ');
-
       const dataParts = data.split('/');
       let day, month, year;
 
@@ -76,21 +75,22 @@ export default function Processamentos() {
       }
 
       const [time, period] = hora.split(' ');
-      let [hours, minutes, seconds] = time.split(':');
+      const [hours, minutes, seconds] = time.split(':');
 
-      if (period && (period.toUpperCase() === 'PM' && parseInt(hours, 10) < 12)) {
-        hours = (parseInt(hours, 10) + 12).toString();
-      } else if (period && period.toUpperCase() === 'AM' && parseInt(hours, 10) === 12) {
-        hours = '00';
+      let adjustedHours = hours;
+      if (period && (period.toUpperCase() === 'PM' && parseInt(adjustedHours, 10) < 12)) {
+        adjustedHours = (parseInt(adjustedHours, 10) + 12).toString();
+      } else if (period && period.toUpperCase() === 'AM' && parseInt(adjustedHours, 10) === 12) {
+        adjustedHours = '00';
       }
 
-      const formattedDateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours}:${minutes}:${seconds}`;
+      const formattedDateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${adjustedHours}:${minutes}:${seconds}`;
       const dateObj = new Date(formattedDateString);
 
       if (isNaN(dateObj.getTime())) {
         throw new Error('Data inválida');
       }
-
+  
       return {
         data: dateObj.toLocaleDateString('pt-BR', {
           day: '2-digit',
