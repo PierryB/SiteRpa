@@ -57,13 +57,29 @@ export default function Processamentos() {
   const formatDataHora = (dataHora: string) => {
     try {
       const [data, hora] = dataHora.split(', ');
-      const [day, month, year] = data.split('/');
+      const dataParts = data.split('/');
+      let day, month, year;
+  
+      if (dataParts.length === 3) {
+        if (parseInt(dataParts[0], 10) <= 12 && parseInt(dataParts[1], 10) <= 31) {
+          month = dataParts[0];
+          day = dataParts[1];
+          year = dataParts[2];
+        } else {
+          day = dataParts[0];
+          month = dataParts[1];
+          year = dataParts[2];
+        }
+      } else {
+        throw new Error('Formato de data inválido');
+      }
+  
       const [hours, minutes, seconds] = hora.split(':');
       const formattedDateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours}:${minutes}:${seconds}`;
       const dateObj = new Date(formattedDateString);
-  
+
       if (isNaN(dateObj.getTime())) {
-        throw new Error('Invalid date');
+        throw new Error('Data inválida');
       }
   
       return {
