@@ -86,6 +86,7 @@ export default function Processamentos() {
 
       const formattedDateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${adjustedHours}:${minutes}:${seconds}`;
       const dateObj = new Date(formattedDateString);
+
       if (isNaN(dateObj.getTime())) {
         throw new Error('Data inválida');
       }
@@ -209,8 +210,6 @@ export default function Processamentos() {
               <tbody>
                 {tarefas.map((tarefa) => {
                   const { data, hora } = formatDataHora(tarefa.dataHora);
-                  console.log(tarefa.dataHora);
-                  console.log(data + "|||" + hora);
                   return (
                     <tr key={tarefa.id} className="text-center">
                       <td className="border border-gray-300 p-2">{tarefa.opcao}</td>

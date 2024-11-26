@@ -14,8 +14,6 @@ const config: Config = {
   // All imported modules in your tests should be mocked automatically
   // automock: false,
 
-  
-
   // Stop running tests after `n` failures
   // bail: 0,
 
@@ -33,7 +31,7 @@ const config: Config = {
 
   // The directory where Jest should output its coverage files
   coverageDirectory: "coverage",
-
+  coverageReporters: ['lcov', 'text'],
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [
   //   "\\\\node_modules\\\\"
