@@ -81,7 +81,7 @@ export default function Processamentos() {
       if (period && (period.toUpperCase() === 'PM' && parseInt(adjustedHours, 10) < 12)) {
         adjustedHours = (parseInt(adjustedHours, 10) + 12).toString();
       } else if (period && period.toUpperCase() === 'AM' && parseInt(adjustedHours, 10) === 12) {
-        adjustedHours = '00'; // Para 12 AM, deve ser 00 horas
+        adjustedHours = '00';
       }
 
       const formattedDateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${adjustedHours}:${minutes}:${seconds}`;
