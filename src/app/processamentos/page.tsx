@@ -86,7 +86,6 @@ export default function Processamentos() {
 
       const formattedDateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${adjustedHours}:${minutes}:${seconds}`;
       const dateObj = new Date(formattedDateString);
-
       if (isNaN(dateObj.getTime())) {
         throw new Error('Data inválida');
       }
